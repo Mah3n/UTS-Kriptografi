@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Chiper Transposisi</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        body {
+            background-color: #F3F3E0;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 3.125rem;
+            background-color: #133E87;
+        }
+        header > h1 {
+            font-size: 1.25rem;
+            color: white;
+        }
+        .wrap {
+            margin-top: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .wrap > button {
+            margin-top: .625rem;
+            width: 70%;
+            padding: .625rem 0;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: #CBDCEB;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 70%;
+        }
+        .input-group > label {
+            margin-bottom: .625rem;
+        }
+        .input-group > input {
+            width: 100%;
+            padding: .625rem .3125rem;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: .625rem;
+        }
+
+        .result {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 70%;
+        }
+
+        #result-table {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        #result-table tr{
+            padding: 5px;
+        }
+        #result-table td{
+            padding: 5px;
+        }
+
+        .result-decrypt {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 70%;
+        }
+
+        #decrypt-table {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        #decrypt-table tr{
+            padding: 5px;
+        }
+        #decrypt-table td{
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Kalkulator Chiper Transposisi</h1>
+    </header>
+    <div class="wrap">
+        <div class="input-group">
+            <label for="plaintext">Masukkan Plainteks :</label>
+            <input type="text" id="plaintext" placeholder="contoh: Manchester is Red">
+        </div>
+        <div class="input-group">
+            <label for="key">Masukkan Key / Kunci :</label>
+            <input type="number" id="key" placeholder="contoh: 4" min="1">
+        </div>
+        <div class="input-group">
+            <label for="simbol">Masukkan simbol pengganti (opsional) :</label>
+            <input type="text" id="simbol" placeholder="contoh: #">
+        </div>
+        <button id="enkripsi">Enkripsi</button>
+    </div>
+
+    <div class="result">
+        <h1>Hasil Enkripsi: </h1>
+        <table id="result-table" border="1" width="150px">
+
+        </table>
+        <h3 id="result-text"></h3>
+    </div>
+
+    <div class="result-decrypt">
+        <h1>Hasil Decrypt: </h1>
+        <table id="decrypt-table" border="1" width="150px">
+
+        </table>
+        <h3 id="result-plain"></h3>
+    </div>
+
+    <script>
+        const enkripsi = document.getElementById("enkripsi");
+        enkripsi.addEventListener("click", startEncript);
+
+        function startEncript() {
+            const rawPlaintext = document.getElementById("plaintext").value.toUpperCase();
+            const plaintext = rawPlaintext.split(" ").join("");
+            console.log(plaintext);
+            const key = parseInt(document.getElementById("key").value);
+            const simbol = document.getElementById("simbol").value || "#";
+
+            if (!plaintext || !key) {
+                alert("Mohon masukkan plaintext / key nya terlebih dahulu");
+                return;
+            }
+
+            const panjangTeks = plaintext.length;
+            const arrayPlain = plaintext.split("");
+            const kolom = key;
+            const baris = Math.ceil(panjangTeks / kolom);
+            const arr = new Array(baris);
+            let pos = 0;
+            let chiper = "";
+
+            for (var i = 0; i < baris; i++){
+             arr[i] = new Array(kolom);
+            }
+
+            for (let i = 0; i < baris; i++) {
+                for (let j = 0; j < kolom; j++) {
+                    if (pos < panjangTeks) {
+                        arr[i][j] = arrayPlain[pos];
+                    } else {
+                        arr[i][j] = simbol;
+                    }
+                    pos++;
+                }
+            }
+
+            for (let i = 0; i < kolom; i++) {
+                for (let j = 0; j < baris; j++) {
+                    chiper += arr[j][i];
+                }
+            }
+
+            document.getElementById('result-text').innerHTML = chiper;
+            const resultTable = document.getElementById("result-table");
+            for (let i = 0; i < baris; i++) {
+                const row = document.createElement("tr");
+                for (let j = 0; j < kolom; j++) {
+                    const cell = document.createElement("td");
+                    cell.textContent = arr[i][j];
+                    row.appendChild(cell);
+                }
+                resultTable.appendChild(row);
+            }
+
+            if(chiper != null) {
+                startDecript();
+            }
+        }
+
+        function startDecript() {
+            const chiperText = document.getElementById('result-text').innerHTML.toUpperCase();
+            const key = parseInt(document.getElementById("key").value);
+
+            const panjangChiper = chiperText.length;
+            const arrayChiper = chiperText.split("");
+            const kolom = panjangChiper / key;
+            const baris = Math.ceil(panjangChiper / kolom);
+            const arr = new Array(baris);
+            let pos = 0;
+            let plain = "";
+
+            for (var i = 0; i < baris; i++){
+             arr[i] = new Array(kolom);
+            }
+
+            for (let i = 0; i < baris; i++) {
+                for (let j = 0; j < kolom; j++) {
+                    if (pos < panjangChiper) {
+                        arr[i][j] = arrayChiper[pos];
+                    }
+                    pos++;
+                }
+            }
+
+            for (let i = 0; i < kolom; i++) {
+                for (let j = 0; j < baris; j++) {
+                    plain += arr[j][i];
+                }
+            }
+
+            document.getElementById("result-plain").innerHTML = plain;
+            const resultTable = document.getElementById("decrypt-table");
+            for (let i = 0; i < baris; i++) {
+                const baris = document.createElement("tr");
+                for (let j = 0; j < kolom; j++) {
+                    const kolom = document.createElement("td");
+                    kolom.textContent = arr[i][j];
+                    baris.appendChild(kolom);
+                }
+                resultTable.appendChild(baris);
+            }
+        }
+    </script>
+</body>
+</html>
