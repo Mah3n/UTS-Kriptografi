@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steganography SLB</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            height: 45px;
+            width: 100%;
+            background-color: #6495ed;
+        }
+        nav {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        nav h3{
+            margin-left: 10px;
+            color: white;
+        }
+        .nav-list a{
+            color: white;
+            text-decoration: none;
+            padding: 14px 10px;
+        }
+        .nav-list a.active{
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            background-color: #F3F3E0;
+            text-align: center;
+        }
+
+        #outputCanvas {
+            margin-top: 20px;
+            max-width: 50%;
+            max-height: 50vh;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        textarea {
+            width: 80%;
+            height: 100px;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        a#downloadLink {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background-color: #008CBA;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        .preview-image{
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+          <h3>Kriptografi</h3>
+          <div class="nav-list">
+            <a href="chipertransform.html">Chiper Transposisi</a>
+            <a href="SteganoGrafiLSB.html" class="active">Steganografi</a>
+          </div>
+        </nav>
+    </header>
+
+    <h1 style="margin-top: 20px;">Steganography LSB</h1>
+
+    <input type="file" id="imageInput" accept="image/*"><br>
+    <textarea id="messageInput" placeholder="Ketik Pesan Rahasiamu disini"></textarea><br>
+    <button onclick="hideMessage()">Hide Message</button>
+    <button onclick="extractMessage()">Extract Message</button>
+    <a id="downloadLink" style="display:none;">Download Image</a>
+
+    <div class="preview-image">
+        <canvas id="outputCanvas"></canvas>
+    </div>
+
+    <div class="hasilPesan">
+        <label for="messageOutput">Hasil Ekstrasi Pesan Tersembunyi:</label> <br>
+        <textarea name="messageOutput" id="messageOutput"></textarea>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const messageInput = document.getElementById('messageInput');
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d');
+        const downloadLink = document.getElementById('downloadLink');
+
+        let image = new Image();
+
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    image.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        image.onload = () => {
+            if (image.width < 128 || image.height < 128) {
+                alert('Gambar harus berukuran minimal 128x128 pixels.');
+                return;
+            }
+
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            if (imageData.data.length % 4 !== 0) {
+                alert('Gambar harus berchannel RGB.');
+                return;
+            }
+        };
+
+        function hideMessage() {
+            const message = messageInput.value;
+            if (!message) {
+                alert('Masukkan Pesan Rahasianya!');
+                return;
+            }
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+
+            let messageIndex = 0;
+            let messageBinary = message.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join('') + '00000000';
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                if (messageIndex < messageBinary.length) {
+                    pixels[i] = (pixels[i] & 0xFE) | parseInt(messageBinary[messageIndex]);
+                    messageIndex++;
+                } else {
+                    break;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            alert('Hussst, Pesan Rahasia Telah Tersembunyi!');
+
+            downloadLink.style.display = 'inline-block';
+            downloadLink.href = canvas.toDataURL();
+            downloadLink.download = 'steganography_image.png';
+            downloadLink.addEventListener('click', () => {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 10000);
+            });
+        }
+
+        function extractMessage() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+
+            let binaryMessage = '';
+            for (let i = 0; i < pixels.length; i += 4) {
+                binaryMessage += (pixels[i] & 1).toString();
+            }
+
+            let chars = [];
+            for (let i = 0; i < binaryMessage.length; i += 8) {
+                const byte = binaryMessage.substr(i, 8);
+                if (byte === '00000000') break;
+                chars.push(String.fromCharCode(parseInt(byte, 2)));
+            }
+
+            const message = chars.join('');
+            const messageOuput = document.getElementById("messageOutput").innerText = message;
+        }
+    </script>
+</body>
+</html>

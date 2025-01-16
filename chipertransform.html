@@ -9,20 +9,35 @@
         * {
             padding: 0;
             margin: 0;
-        }
-        body {
-            background-color: #F3F3E0;
+            font-family: Arial, sans-serif;
         }
         header {
+            height: 45px;
+            width: 100%;
+            background-color: #6495ed;
+        }
+        nav {
+            height: 100%;
+            width: 100%;
             display: flex;
             align-items: center;
-            justify-content: center;
-            height: 3.125rem;
-            background-color: #133E87;
+            justify-content: space-between;
         }
-        header > h1 {
-            font-size: 1.25rem;
+        nav h3{
+            margin-left: 10px;
             color: white;
+        }
+        .nav-list a{
+            color: white;
+            text-decoration: none;
+            padding: 14px 10px;
+        }
+        .nav-list a.active{
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            background-color: #F3F3E0;
         }
         .wrap {
             margin-top: 1.25rem;
@@ -102,8 +117,15 @@
 </head>
 <body>
     <header>
-        <h1>Kalkulator Chiper Transposisi</h1>
-    </header>
+        <nav>
+          <h3>Kriptografi</h3>
+          <div class="nav-list">
+            <a href="chipertransform.html" class="active">Chiper Transposisi</a>
+            <a href="SteganoGrafiLSB.html">Steganografi</a>
+          </div>
+        </nav>
+      </header>
+
     <div class="wrap">
         <div class="input-group">
             <label for="plaintext">Masukkan Plainteks :</label>
@@ -111,7 +133,7 @@
         </div>
         <div class="input-group">
             <label for="key">Masukkan Key / Kunci :</label>
-            <input type="number" id="key" placeholder="contoh: 4" min="1">
+            <input type="number" id="key" value="5" min="1">
         </div>
         <div class="input-group">
             <label for="simbol">Masukkan simbol pengganti (opsional) :</label>
@@ -154,6 +176,7 @@
 
             const panjangTeks = plaintext.length;
             const arrayPlain = plaintext.split("");
+            console.log(typeof arrayPlain);
             const kolom = key;
             const baris = Math.ceil(panjangTeks / kolom);
             const arr = new Array(baris);
